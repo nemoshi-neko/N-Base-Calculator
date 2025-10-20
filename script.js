@@ -4,94 +4,133 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelector('.buttons');
 
     // 計算機アプリケーションの状態管理
-    let firstOperand = null; // 最初のオペランド（被演算子）
+    let firstOperand = null; // 最初のオペランド（10進数）
     let operator = null;     // 選択された演算子
-    let waitingForSecondOperand = false; // 2番目のオペランドを待っているか（演算子入力後）
+    let waitingForSecondOperand = false; // 2番目のオペランドを待っているか
+    
+    // 16進数と10進数の対応マップ (0-9, A-F)
+    const HEX_MAP = {
+        '10': 'A', '11': 'B', '12': 'C', '13': 'D', '14': 'E', '15': 'F'
+    };
+    
+    /**
+     * 16進数文字列を10進数にパースする
+     * @param {string} hexString - 16進数表記の文字列
+     * @returns {number} 10進数表記の数値
+     */
+    function parseHexToDecimal(hexString) {
+        // JavaScriptの標準関数 parseInt() を使用し、基数16を指定
+        return parseInt(hexString, 16);
+    }
+    
+    /**
+     * 10進数数値を16進数文字列に変換する
+     * @param {number} decimalNumber - 10進数表記の数値
+     * @returns {string} 大文字の16進数表記の文字列
+     */
+    function formatDecimalToHex(decimalNumber) {
+        if (isNaN(decimalNumber)) return "Error";
+        // toUpperCase() で大文字に変換
+        return decimalNumber.toString(16).toUpperCase();
+    }
 
     /**
-     * ディスプレイに数字/小数点/エラーを表示する
-     * @param {string} inputValue - 入力値
+     * ディスプレイに数字/アルファベットを表示する
+     * @param {string} inputData - data-numberから取得した値 ('0'～'15')
      */
-    function inputDigit(inputValue) {
+    function inputDigit(inputData) {
+        let hexDigit;
+        
+        if (inputData >= 10 && inputData <= 15) {
+            // 10-15をA-Fに変換
+            hexDigit = HEX_MAP[inputData];
+        } else {
+            // 0-9はそのまま
+            hexDigit = inputData;
+        }
+
         if (waitingForSecondOperand === true) {
-            // 演算子入力後の最初の数字は新しい値として扱う
-            display.value = inputValue;
+            // 新しい値として扱う
+            display.value = hexDigit;
             waitingForSecondOperand = false;
         } else {
-            // 現在の値に新しい数字を追加
-            // ただし、ディスプレイが '0' の場合は置き換える
-            display.value = display.value === '0' ? inputValue : display.value + inputValue;
+            // 現在の値に追加
+            // ただし、'0'の場合は置き換え
+            display.value = display.value === '0' ? hexDigit : display.value + hexDigit;
         }
     }
-
+    
     /**
-     * 小数点を入力する
+     * 小数点の入力 (16進数の計算機では通常不要だが、一応実装)
      */
     function inputDecimal() {
-        if (waitingForSecondOperand === true) {
-            display.value = '0.';
-            waitingForSecondOperand = false;
-            return;
-        }
-
-        // 小数点がすでになければ追加
-        if (!display.value.includes('.')) {
-            display.value += '.';
-        }
+        // 16進数計算機では小数点は通常扱わないため、今回は動作しないようにします。
+        // もし対応が必要な場合は、浮動小数点数の16進数表現（例: IEEE 754）を考慮する必要がありますが、
+        // シンプルな実装のため今回はスキップします。
+        console.log("16進数計算機では小数点はサポートされていません。");
     }
 
     /**
-     * 演算子を処理する
+     * 演算子を処理し、計算を実行する
      * @param {string} nextOperator - 次の演算子 ('+', '-', '*', '/')
      */
     function handleOperator(nextOperator) {
-        // 現在ディスプレイに表示されている値を数値に変換
-        const inputValue = parseFloat(display.value);
+        // 現在のディスプレイ値を16進数文字列として取得
+        const hexValue = display.value;
+        
+        // 10進数に変換して計算に使用
+        const inputValue = parseHexToDecimal(hexValue);
+
+        if (isNaN(inputValue)) {
+             display.value = 'Error';
+             return;
+        }
 
         if (operator && waitingForSecondOperand) {
-            // 演算子が既に選択されていて、まだ2番目のオペランドが入力されていない場合
-            // 新しい演算子で置き換える (例: '+'の後に'×'を押したら'×'になる)
+            // 演算子の置き換え
             operator = nextOperator;
             return;
         }
 
         if (firstOperand === null) {
-            // 最初のオペランドが未設定なら、現在の値を設定
+            // 最初のオペランドを設定 (10進数)
             firstOperand = inputValue;
         } else if (operator) {
-            // 2番目のオペランドが入力済みで、前回の演算子がある場合
-            // 即座に計算を実行し、結果を次の最初のオペランドとする
+            // 2番目のオペランドが入力済みの場合、計算を実行
             const result = calculate(firstOperand, inputValue, operator);
             
-            // 結果をディスプレイに表示（小数点以下は最大9桁で丸める）
-            display.value = String(result).slice(0, 15); // 結果が長くなりすぎるのを防ぐ
-            firstOperand = result; // 結果を次の計算の最初のオペランドとして保持
+            // 結果 (10進数) を16進数に変換して表示
+            display.value = formatDecimalToHex(result);
+            firstOperand = result; // 結果を次の計算の最初のオペランドとして保持 (10進数)
         }
 
         // 次のオペランド入力を待機する状態に設定
         waitingForSecondOperand = true;
-        // 選択された演算子を保持
         operator = nextOperator;
     }
 
     /**
-     * 実際の四則演算ロジック
-     * @param {number} first - 最初の数値
-     * @param {number} second - 2番目の数値
+     * 実際の四則演算ロジック (10進数で行う)
+     * @param {number} first - 最初の数値 (10進数)
+     * @param {number} second - 2番目の数値 (10進数)
      * @param {string} op - 演算子
-     * @returns {number} 計算結果
+     * @returns {number} 計算結果 (10進数)
      */
     function calculate(first, second, op) {
         switch (op) {
+            // 16進数計算機では整数演算が主流のため、ビット演算（&, |, ^）も一般的ですが、
+            // 今回は四則演算のみに絞り込み、10進数として処理します。
             case '+': return first + second;
             case '-': return first - second;
             case '*': return first * second;
             case '/': 
                 if (second === 0) {
                     alert("ゼロによる割り算はできません。");
-                    return NaN; // Not a Numberを返す
+                    return NaN; // Not a Number
                 }
-                return first / second;
+                // 16進数計算機では通常、結果を整数に切り捨てる（ビット演算のように）
+                // ことが多いが、ここでは一般的な浮動小数点の結果を返します。
+                return Math.floor(first / second); // 整数部分のみを返す
             default: return second;
         }
     }
@@ -112,40 +151,36 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     buttons.addEventListener('click', (event) => {
         const target = event.target;
-        // クリックされた要素がボタンでなければ何もしない
         if (!target.matches('button')) {
             return;
         }
 
         if (target.classList.contains('number')) {
-            // 数字または小数点の処理
-            const number = target.dataset.number;
-            if (number === '.') {
-                inputDecimal();
+            // data-numberは文字列として取得される
+            const numberData = target.dataset.number;
+            
+            if (numberData === '.') {
+                inputDecimal(); // 小数点処理（今回は機能しない）
             } else {
-                inputDigit(number);
+                inputDigit(numberData);
             }
             return;
         }
 
         if (target.classList.contains('operator')) {
-            // 演算子の処理
             handleOperator(target.dataset.operator);
             return;
         }
 
         if (target.dataset.action === 'calculate') {
-            // '=' (計算実行) の処理
-            // firstOperand, display.value, operatorの3つが揃っている必要がある
             if (firstOperand !== null && operator !== null && waitingForSecondOperand === false) {
-                // handleOperatorを再利用して計算を実行
+                // '=' (計算実行) はhandleOperatorを再利用
                 handleOperator(operator);
             }
             return;
         }
 
         if (target.dataset.action === 'clear') {
-            // 'C' (クリア) の処理
             resetCalculator();
             return;
         }

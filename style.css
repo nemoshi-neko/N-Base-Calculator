@@ -32,8 +32,8 @@ body {
 
 .buttons {
     display: grid;
-    /* 4列のグリッドレイアウト */
-    grid-template-columns: repeat(4, 1fr); 
+    /* 5列のグリッドレイアウト */
+    grid-template-columns: repeat(5, 1fr); 
     gap: 10px;
 }
 
@@ -67,10 +67,5 @@ button:hover {
 
 .equal {
     /* 「=」ボタンを縦に2マス分に広げる */
-    grid-row: span 2; 
-}
-
-.zero {
-    /* 「0」ボタンを横に2マス分に広げる */
-    grid-column: span 2; 
+    grid-row: span 3; 
 }
