@@ -1,19 +1,22 @@
 const display = document.getElementById('display');
+const message = document.getElementById('message');
 const buttons = document.querySelector('.buttons');
 let state = {
     GlobalOperand:0,
     LetOperand:0,
-    NextOpe:0
+    NextOpe:0,
+    NANS:10//N-Adic Number System
 }
+const OPS = { ADD: 1, SUB: 2, MUL: 3, DIV: 4 };
 
 function calc(ope,a,b){
     switch(ope){
-        case 1: return a+b;
-        case 2: return a-b;
-        case 3: return a*b;
-        case 4: {
+        case OPS.ADD: return a+b;
+        case OPS.SUB: return a-b;
+        case OPS.MUL: return a*b;
+        case OPS.DIV: {
             if (b === 0) 
-            throw new Error("Division by zero is not allowed.");
+            message.innerHTML="n/0 is not defined";
             return a/b;
         }
     }
@@ -39,6 +42,10 @@ buttons.addEventListener('click', (event) => {
         Show(state.GlobalOperand)
         return;
     }
+    if (target.classList.contains('set')) {
+        set();
+        return;
+    }
     if (target.dataset.action === 'clear') {
         reset();
         return;
@@ -47,27 +54,40 @@ buttons.addEventListener('click', (event) => {
 
 function newNum(num){
     if(!state.LetOperand)state.LetOperand=num;
-    else state.LetOperand=16*state.LetOperand+num;
+    else state.LetOperand=state.NANS*state.LetOperand+num;
     Show(state.LetOperand);
+}
+
+function set(){
+    if(state.LetOperand<2 || state.LetOperand>16){message.innerHTML="2<=n<=16!!";return;}
+    if(state.NextOpe)return;
+    state.NANS=state.LetOperand;
+    state.LetOperand=0;
+    display.value='('+state.NANS+')'
 }
 
 function newOperator(ope){
     if(!state.NextOpe)state.GlobalOperand=state.LetOperand;
     else state.GlobalOperand=calc(state.NextOpe,state.GlobalOperand,state.LetOperand)
     switch(ope){
-        case '+': state.NextOpe = 1; break;
-        case '-': state.NextOpe = 2; break;
-        case '*': state.NextOpe = 3; break;
-        case '/': state.NextOpe = 4; break;
+        case '+': state.NextOpe = OPS.ADD; break;
+        case '-': state.NextOpe = OPS.SUB; break;
+        case '*': state.NextOpe = OPS.MUL; break;
+        case '/': state.NextOpe = OPS.DIV; break;
     }
     state.LetOperand=0;
 }
 
 function Show(num){
-    display.value=num.toString(16).toUpperCase();
+    display.value='('+state.NANS+')'+num.toString(state.NANS).toUpperCase();
 }
 
 function reset(){
-    Object.keys(state).forEach(key => state[key]=0);
+    state = { 
+        GlobalOperand: 0, 
+        LetOperand: 0, 
+        NextOpe: 0, 
+        NANS: 10
+    };
     display.value='';
 }

@@ -73,12 +73,14 @@ button:hover {
 }
 
 .equal {
-    grid-row: span 3; 
+    grid-row: span 2; 
 }
 
 .clear:hover, .equal:hover {
     background-color: #9acfe0;
 }
+
+.message{color:#333;}
 
 /* ------------------------------------- */
 /* 🌙 ダークモード（かわいい）テーマ 🌙 */
@@ -127,4 +129,5 @@ button:hover {
     .clear:hover, .equal:hover {
         background-color: #839bc4;
     }
+    .message{color:#f0f0f0}
 }
