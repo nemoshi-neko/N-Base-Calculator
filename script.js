@@ -1,4 +1,4 @@
-class brain{
+class Brain{
     constructor(){
         this.reset()
     }
@@ -14,9 +14,10 @@ class brain{
         mn.format(this.b);
     }
     inputop(op){
-        this.op=op;
+        if(this.a)this.b=this.calc(this.a,this.b,this.op);
         this.a=this.b;
         this.b=0;
+        this.op=op;
     }
     calc(a,b,op){
         switch(op){
@@ -87,6 +88,6 @@ class MotorNerve{
     }
 }
 
-mn= new MotorNerve
-br= new brain;
+mn= new MotorNerve;
+br= new Brain;
 sn= new SensoryNerve;
