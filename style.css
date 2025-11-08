@@ -20,7 +20,7 @@ body {
     width: 300px; 
 }
 
-#display {
+#wagon {
     width: 100%;
     height: 60px;
     margin-bottom: 20px;
@@ -99,7 +99,7 @@ button:hover {
         color: #ecf0f1; 
     }
 
-    #display {
+    #wagon {
         background-color: #4c667f; /* 暗い青系のディスプレイ */
         border-color: #777;
         color: #ecf0f1;
